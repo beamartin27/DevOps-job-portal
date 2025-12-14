@@ -1,0 +1,305 @@
+Minimalistic UI/UX Ruleset for React Projects
+1. Layout & Structure
+
+Use flex or grid for all layouts — never absolute positioning unless required.
+
+Maintain a maximum page width of 1200px for readability.
+
+Use consistent spacing units (4, 8, 16, 24, 32px) across the entire UI.
+
+Keep components modular — 1 component = 1 responsibility.
+
+2. Typography
+
+Define two font sizes for body text: 14px and 16px.
+
+Keep headings consistent: h1, h2, h3 with fixed scale (e.g., 32–24–18).
+
+Limit fonts to one family + weight variations (no more than 3 weights).
+
+3. Color System
+
+Stick to one primary, one secondary, and one neutral palette.
+
+Use opacity (e.g., rgba(0,0,0,0.05)) for borders/shadows instead of random colors.
+
+Maintain a single accent color for CTAs.
+
+4. Components
+
+Every component must:
+
+Accept className for overrides.
+
+Be fully controlled or fully uncontrolled, never mixed.
+
+Avoid internal styling unless necessary — prefer a consistent system (CSS modules, Tailwind, or styled-components).
+
+5. Icons & Media
+
+Keep icons thin-lined and consistent (Lucide, Heroicons).
+
+Avoid icons > 24px.
+
+Compress images before using them.
+
+Assume dark mode from day one — choose colors that survive it.
+
+6. Animations
+
+Keep animations subtle: 150–250ms, ease-out.
+
+Apply motion only to:
+
+Buttons (hover)
+
+Modals (fade+slide)
+
+Dropdowns
+
+No infinite loops or distracting movements.
+
+7. Responsiveness
+
+Start with mobile-first (min 360px width).
+
+Use three breakpoints only:
+
+sm: 640px
+
+md: 768px
+
+lg: 1024px
+
+Hide non-essential UI on mobile.
+
+8. Forms
+
+Inputs must always have:
+
+visible label
+
+placeholder
+
+error state
+
+success/neutral state
+
+Buttons must be:
+
+full-width on mobile
+
+have consistent border-radius (8–12px max)
+
+9. State & Logic
+
+Prefer React Query for async logic.
+
+Keep component state minimal:
+
+UI State → component
+
+Session/user state → context
+
+Server data → React Query
+
+Avoid passing props more than 2 levels deep → use context or store.
+
+10. Code Hygiene
+
+Every file max 200 lines.
+
+One component per file.
+
+Use clear names:
+
+Components: RecipeCard.jsx
+
+Hooks: useFetchRecipe.js
+
+Utils: formatCalories.js
+
+Avoid anonymous functions in JSX if performance matters.
+
+---
+
+## Job Portal Project Structure
+
+### Technology Stack
+- **Frontend**: React 19 + React Query (@tanstack/react-query)
+- **Backend**: Node.js + Express
+- **HTTP Client**: Axios
+- **Icons**: Lucide React
+- **Styling**: CSS Modules with Custom Design System
+
+### Project Architecture
+
+```
+job-portal/
+├── client/                    # React Frontend Application
+│   ├── public/
+│   │   ├── index.html
+│   │   └── favicon.ico
+│   └── src/
+│       ├── components/        # Reusable UI Components
+│       │   ├── Header.jsx         # Site header with navigation
+│       │   ├── Header.css
+│       │   ├── SearchBar.jsx      # Search and filter component
+│       │   ├── SearchBar.css
+│       │   ├── JobCard.jsx        # Job listing card
+│       │   ├── JobCard.css
+│       │   ├── JobDetail.jsx      # Detailed job view
+│       │   ├── JobDetail.css
+│       │   ├── JobBoard.jsx       # Main job board container
+│       │   ├── JobBoard.css
+│       │   ├── Pagination.jsx     # Pagination controls
+│       │   ├── Pagination.css
+│       │   ├── Loading.jsx        # Loading spinner
+│       │   ├── Loading.css
+│       │   ├── ErrorMessage.jsx   # Error display
+│       │   └── ErrorMessage.css
+│       ├── services/          # API Service Layer
+│       │   └── api.js            # Axios API client & endpoints
+│       ├── utils/             # Utility Functions
+│       │   └── formatters.js     # Date, salary, location formatters
+│       ├── App.js             # Root component with QueryProvider
+│       ├── App.css            # Global styles & design system
+│       ├── index.js           # React entry point
+│       └── index.css
+│
+├── server/                    # Node.js Backend
+│   ├── config/
+│   │   └── api.js            # API configuration
+│   └── index.js              # Express server with REST endpoints
+│
+├── package.json              # Root package.json (backend)
+├── .gitignore
+├── .env.example
+└── README.md
+
+client/package.json           # Frontend dependencies
+```
+
+### Component Responsibilities
+
+1. **Header** - Global navigation and branding
+2. **SearchBar** - Search input, location filter, remote toggle
+3. **JobCard** - Compact job listing with key details
+4. **JobDetail** - Full job description and application link
+5. **JobBoard** - Layout container managing job list and detail view
+6. **Pagination** - Page navigation controls
+7. **Loading** - Loading state indicator
+8. **ErrorMessage** - Error state display
+
+### API Endpoints
+
+**Backend (Express)**
+- `GET /api/jobs` - Fetch jobs with filters (search, location, remote, pagination)
+- `GET /api/jobs/:id` - Fetch single job by ID
+- `GET /api/health` - Health check
+
+### Design System Variables
+
+```css
+:root {
+  /* Colors */
+  --primary: #2563eb;
+  --secondary: #64748b;
+  --accent: #f59e0b;
+  --text-primary: #1a1a1a;
+  --text-secondary: #64748b;
+  --border: rgba(0, 0, 0, 0.08);
+  
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  
+  /* Typography */
+  --font-size-sm: 14px;
+  --font-size-base: 16px;
+  --font-size-lg: 18px;
+  --font-size-xl: 24px;
+  --font-size-2xl: 32px;
+  
+  /* Border Radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  
+  /* Max Width */
+  --max-width: 1200px;
+  
+  /* Transitions */
+  --transition: 200ms ease-out;
+}
+```
+
+### Key Features Implemented
+
+✅ Job search with multiple filters
+✅ Responsive design (mobile, tablet, desktop)
+✅ Dark mode support
+✅ Pagination
+✅ Loading and error states
+✅ Detailed job view
+✅ External application links
+✅ Company logos and branding
+✅ Remote job badges
+✅ Salary formatting
+✅ Relative date display
+
+### State Management Pattern
+
+- **Server State**: React Query (@tanstack/react-query)
+  - Job listings
+  - Pagination data
+  - Loading/error states
+  
+- **Component State**: useState
+  - Selected job
+  - Search filters
+  - UI interactions
+
+### API Integration
+
+**Frontend → Backend**
+```javascript
+// services/api.js
+fetchJobs({ search, location, remote, page, limit })
+fetchJobById(id)
+```
+
+**Backend → API**
+```javascript
+// Mock data from RapidAPI job structure
+// Can be replaced with actual API calls
+```
+
+### Installation & Usage
+
+```bash
+# Install all dependencies
+npm run install-all
+
+# Run both servers concurrently
+npm run dev
+
+# Frontend: http://localhost:3000
+# Backend: http://localhost:5000
+```
+
+### Environment Variables
+
+**Root `.env`**
+```
+PORT=5000
+RAPIDAPI_KEY=your_key
+RAPIDAPI_HOST=rapidapi.com
+```
+
+**Client `.env`**
+```
+REACT_APP_API_URL=http://localhost:5000/api
+```

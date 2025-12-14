@@ -1,0 +1,13 @@
+node_modules/
+.env
+.DS_Store
+client/build
+client/node_modules
+*.log
+
+# Deployment artifacts
+deploy/
+*.zip
+build/
+dist/
+

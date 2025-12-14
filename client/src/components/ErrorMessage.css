@@ -1,0 +1,17 @@
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: var(--radius-md);
+  color: #dc2626;
+  margin: var(--spacing-lg) 0;
+}
+
+.error-message__text {
+  font-size: var(--font-size-base);
+  font-weight: 500;
+}
+
