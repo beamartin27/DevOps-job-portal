@@ -4,8 +4,22 @@ const path = require('path');
 const fs = require('fs');
 const config = require('./config/api');
 const axios = require('axios');
+const { connectDatabase } = require('./config/database');
+const JobService = require('./services/jobService');
 
 const app = express();
+
+// Connect to database on startup
+let dbConnected = false;
+connectDatabase()
+  .then(connection => {
+    if (connection) {
+      dbConnected = true;
+    }
+  })
+  .catch(err => {
+    console.error('Database connection failed:', err.message);
+  });
 
 // Middleware
 app.use(cors());
@@ -40,7 +54,9 @@ app.get('/api/debug', (req, res) => {
     hasApiKey: !!config.rapidApi.key,
     apiKeyPrefix: config.rapidApi.key ? config.rapidApi.key.substring(0, 10) + '...' : 'NOT SET',
     apiHost: config.rapidApi.host,
-    port: config.server.port
+    port: config.server.port,
+    hasDatabase: dbConnected,
+    dbConnectionString: process.env.DB_CONNECTION_STRING ? 'SET' : 'NOT SET'
   });
 });
 
@@ -48,32 +64,87 @@ app.get('/api/debug', (req, res) => {
 const getJobsHandler = async (req, res) => {
   try {
     const { search, page = 1, limit = 10, location_filter } = req.query;
-    const pageNum = parseInt(page);
-    let limitNum = parseInt(limit);
     
-    // Ensure limit is between 10 and 100
-    if (limitNum < 10) limitNum = 10;
-    if (limitNum > 100) limitNum = 100;
-    
-    // Calculate offset for pagination
-    const offset = (pageNum - 1) * limitNum;
+    // Priority 1: Try database if connected
+    if (dbConnected) {
+      try {
+        const result = await JobService.getJobsFromDatabase({
+          search,
+          location_filter,
+          page,
+          limit
+        });
 
-    // If RapidAPI is configured, fetch from there
+        // If we have jobs in database, return them
+        if (result.jobs.length > 0) {
+          return res.json({
+            success: true,
+            data: result.jobs,
+            pagination: {
+              page: result.page,
+              limit: result.limit,
+              total: result.total,
+              totalPages: result.totalPages
+            },
+            source: 'database'
+          });
+        }
+
+        // If database is empty and RapidAPI is available, sync and return
+        if (config.rapidApi.key && result.jobs.length === 0) {
+          console.log('📥 Database empty, syncing from RapidAPI...');
+          const syncedJobs = await JobService.syncJobsFromRapidAPI({
+            search,
+            location_filter
+          });
+
+          if (syncedJobs.length > 0) {
+            // Fetch again from database after sync
+            const dbResult = await JobService.getJobsFromDatabase({
+              search,
+              location_filter,
+              page,
+              limit
+            });
+
+            return res.json({
+              success: true,
+              data: dbResult.jobs,
+              pagination: {
+                page: dbResult.page,
+                limit: dbResult.limit,
+                total: dbResult.total,
+                totalPages: dbResult.totalPages
+              },
+              source: 'database_synced'
+            });
+          }
+        }
+      } catch (dbError) {
+        console.error('Database error, falling back to API:', dbError.message);
+        // Fall through to API/mock data
+      }
+    }
+
+    // Priority 2: Use RapidAPI if configured
     if (config.rapidApi.key) {
       const apiHost = config.rapidApi.host || 'active-jobs-db.p.rapidapi.com';
+      const pageNum = parseInt(page);
+      let limitNum = parseInt(limit);
+      
+      if (limitNum < 10) limitNum = 10;
+      if (limitNum > 100) limitNum = 100;
       
       const params = {
         limit: limitNum.toString(),
-        offset: offset.toString(),
+        offset: ((pageNum - 1) * limitNum).toString(),
         description_type: 'text'
       };
       
-      // Add title_filter if search is provided
       if (search) {
         params.title_filter = `"${search}"`;
       }
       
-      // Add location_filter if provided
       if (location_filter) {
         params.location_filter = location_filter;
       }
@@ -86,9 +157,15 @@ const getJobsHandler = async (req, res) => {
         }
       });
 
-      // The API response structure may vary, adjust based on actual response
       const jobs = response.data || [];
-      const total = jobs.length; // API might not provide total, using current batch length
+      const total = jobs.length;
+
+      // Save to database if connected (async, don't wait)
+      if (dbConnected && jobs.length > 0) {
+        JobService.saveJobs(jobs).catch(err => {
+          console.error('Error saving jobs to database:', err.message);
+        });
+      }
 
       return res.json({
         success: true,
@@ -96,14 +173,14 @@ const getJobsHandler = async (req, res) => {
         pagination: {
           page: pageNum,
           limit: limitNum,
-          offset,
-          total, // Note: API may not provide total count
+          total,
           totalPages: Math.ceil(total / limitNum)
-        }
+        },
+        source: 'rapidapi'
       });
     }
 
-    // Fallback: return mock data if API key is not configured
+    // Priority 3: Fallback to mock data
     const mockJobs = [
       {
         id: '1903980996',
@@ -126,11 +203,12 @@ const getJobsHandler = async (req, res) => {
       success: true,
       data: filteredJobs,
       pagination: {
-        page: pageNum,
-        limit: limitNum,
+        page: parseInt(page),
+        limit: parseInt(limit),
         total: filteredJobs.length,
-        totalPages: Math.ceil(filteredJobs.length / limitNum)
-      }
+        totalPages: Math.ceil(filteredJobs.length / parseInt(limit))
+      },
+      source: 'mock'
     });
   } catch (error) {
     console.error('Error fetching jobs:', error.message);
@@ -152,13 +230,26 @@ const getJobByIdHandler = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // If RapidAPI is configured, fetch from there
-    // Note: This API may not support direct job lookup by ID
-    // We'll search for jobs and filter by ID
+    // Priority 1: Try database if connected
+    if (dbConnected) {
+      try {
+        const job = await JobService.getJobByIdFromDatabase(id);
+        if (job) {
+          return res.json({
+            success: true,
+            data: job,
+            source: 'database'
+          });
+        }
+      } catch (dbError) {
+        console.error('Database error, falling back to API:', dbError.message);
+      }
+    }
+
+    // Priority 2: Try RapidAPI if configured
     if (config.rapidApi.key) {
       const apiHost = config.rapidApi.host || 'active-jobs-db.p.rapidapi.com';
       
-      // Try to fetch a batch and find the job by ID
       const response = await axios.get('https://active-jobs-db.p.rapidapi.com/active-ats-7d', {
         params: {
           limit: '100',
@@ -175,14 +266,22 @@ const getJobByIdHandler = async (req, res) => {
       const job = jobs.find(j => j.id === id || j.job_id === id || String(j.id) === String(id));
 
       if (job) {
+        // Save to database if connected (async, don't wait)
+        if (dbConnected) {
+          JobService.saveJob(job).catch(err => {
+            console.error('Error saving job to database:', err.message);
+          });
+        }
+
         return res.json({
           success: true,
-          data: job
+          data: job,
+          source: 'rapidapi'
         });
       }
     }
 
-    // Fallback: check mock data
+    // Priority 3: Fallback to mock data
     const mockJob = {
       id: '1903980996',
       title: 'Software Engineer',
@@ -194,7 +293,8 @@ const getJobByIdHandler = async (req, res) => {
     if (mockJob.id === id) {
       return res.json({
         success: true,
-        data: mockJob
+        data: mockJob,
+        source: 'mock'
       });
     }
 
@@ -248,6 +348,10 @@ app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`API Key configured: ${config.rapidApi.key ? 'YES (' + config.rapidApi.key.substring(0, 10) + '...)' : 'NO'}`);
   console.log(`API Host: ${config.rapidApi.host}`);
+  console.log(`Database: ${dbConnected ? 'CONNECTED' : 'NOT CONNECTED'}`);
+  if (process.env.DB_CONNECTION_STRING) {
+    console.log(`DB Connection String: ${process.env.DB_CONNECTION_STRING.substring(0, 30)}...`);
+  }
 });
 
 // Export app for testing

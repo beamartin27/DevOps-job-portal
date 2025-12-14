@@ -16,6 +16,9 @@ module.exports = {
   },
   server: {
     port: process.env.PORT || 5000
+  },
+  database: {
+    connectionString: process.env.DB_CONNECTION_STRING
   }
 };
 
