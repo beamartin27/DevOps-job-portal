@@ -17,6 +17,7 @@
     "package:backend": "node scripts/package-backend.js",
     "package:frontend": "node scripts/package-frontend.js",
     "package:all": "npm run package:backend && npm run package:frontend",
+    "fix:zip": "node scripts/fix-zip.js",
     "docker:build": "docker-compose build",
     "docker:up": "docker-compose up",
     "docker:down": "docker-compose down",
@@ -36,7 +37,9 @@
     "concurrently": "^8.2.2",
     "jest": "^29.7.0",
     "jest-junit": "^16.0.0",
-    "supertest": "^6.3.3"
+    "supertest": "^6.3.3",
+    "archiver": "^7.0.1",
+    "adm-zip": "^0.5.16"
   },
   "jest-junit": {
     "outputDirectory": ".",

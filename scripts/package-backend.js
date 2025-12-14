@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
+const archiver = require('archiver');
 
 const rootDir = path.join(__dirname, '..');
 const deployDir = path.join(rootDir, 'deploy');
@@ -56,27 +56,28 @@ filesToCopy.forEach(({ from, to }) => {
   copyRecursive(from, to);
 });
 
-// Create ZIP file
+// Create ZIP file using archiver (ensures forward slashes for cross-platform compatibility)
 console.log('Creating ZIP file...');
 const zipPath = path.join(deployDir, 'backend.zip');
+const output = fs.createWriteStream(zipPath);
+const archive = archiver('zip', {
+  zlib: { level: 9 } // Maximum compression
+});
 
-// Use PowerShell Compress-Archive on Windows, zip on Unix
-if (process.platform === 'win32') {
-  const backendPath = path.join(deployDir, 'backend');
-  // Convert to forward slashes for PowerShell (it accepts both)
-  const psBackendPath = backendPath.replace(/\\/g, '/');
-  const psZipPath = zipPath.replace(/\\/g, '/');
-  execSync(`powershell -Command "Compress-Archive -Path '${psBackendPath}/*' -DestinationPath '${psZipPath}' -Force"`, {
-    cwd: rootDir,
-    stdio: 'inherit',
-    shell: true
-  });
-} else {
-  execSync(`cd ${deployDir} && zip -r backend.zip backend`, {
-    cwd: rootDir,
-    stdio: 'inherit'
-  });
-}
+output.on('close', () => {
+  console.log(`Backend package created: ${zipPath} (${archive.pointer()} total bytes)`);
+});
 
-console.log('Backend package created: deploy/backend.zip');
+archive.on('error', (err) => {
+  throw err;
+});
+
+archive.pipe(output);
+
+// Add the backend directory to the archive
+// archiver automatically converts backslashes to forward slashes
+const backendPath = path.join(deployDir, 'backend');
+archive.directory(backendPath, false);
+
+archive.finalize();
 
