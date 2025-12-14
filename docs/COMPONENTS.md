@@ -1,4 +1,4 @@
-# 📦 Component Reference Guide
+# Component Reference Guide
 
 Complete reference for all React components in the Job Portal.
 

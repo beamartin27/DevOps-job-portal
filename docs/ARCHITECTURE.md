@@ -12,74 +12,53 @@
                               ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │                      REACT FRONTEND                              │
-│                    (Port 3000 - Client)                          │
+│                   (Azure App Service)                            │
 │                                                                   │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │
-│  │   Header     │  │  SearchBar   │  │  JobBoard    │          │
-│  └──────────────┘  └──────────────┘  └──────────────┘          │
+│  Components: Header, SearchBar, JobBoard, JobCard,              │
+│             JobDetail, Pagination, Loading, ErrorMessage         │
 │                                                                   │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │
-│  │   JobCard    │  │  JobDetail   │  │  Pagination  │          │
-│  └──────────────┘  └──────────────┘  └──────────────┘          │
-│                                                                   │
-│  ┌──────────────┐  ┌──────────────┐                            │
-│  │   Loading    │  │ ErrorMessage │                            │
-│  └──────────────┘  └──────────────┘                            │
-│                                                                   │
-│  ┌───────────────────────────────────────────┐                  │
-│  │         Services Layer (API Client)        │                  │
-│  │           - Axios Configuration            │                  │
-│  │           - React Query Setup              │                  │
-│  └───────────────────────────────────────────┘                  │
-│                                                                   │
-│  ┌───────────────────────────────────────────┐                  │
-│  │            Utils Layer                     │                  │
-│  │    - Date Formatters                       │                  │
-│  │    - Salary Formatters                     │                  │
-│  │    - Location Helpers                      │                  │
-│  └───────────────────────────────────────────┘                  │
+│  Services: API Client (Axios + React Query)                      │
+│  Utils: Date/Salary Formatters, Location Helpers                │
 └─────────────────────────────────────────────────────────────────┘
                               │
                               │ API Calls
-                              │ (Axios + React Query)
                               ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                   NODE.JS BACKEND                                │
-│                  (Port 5000 - Server)                            │
+│                   NODE.JS BACKEND API                            │
+│                   (Azure App Service)                            │
 │                                                                   │
-│  ┌───────────────────────────────────────────┐                  │
-│  │         Express.js Application            │                  │
-│  │                                            │                  │
-│  │  Routes:                                   │                  │
-│  │    GET  /api/jobs           ─────────┐    │                  │
-│  │    GET  /api/jobs/:id       ─────┐   │    │                  │
-│  │    GET  /api/health         ──┐  │   │    │                  │
-│  └────────────────────────────────│──│───│────┘                  │
-│                                   │  │   │                       │
-│  ┌────────────────────────────────│──│───│────┐                  │
-│  │      Middleware Stack         │  │   │    │                  │
-│  │    - CORS                     │  │   │    │                  │
-│  │    - JSON Parser              │  │   │    │                  │
-│  │    - Error Handler            │  │   │    │                  │
-│  └────────────────────────────────│──│───│────┘                  │
-│                                   │  │   │                       │
-│  ┌────────────────────────────────│──│───│────┐                  │
-│  │      Business Logic           │  │   │    │                  │
-│  │    - Job Filtering ◄──────────┼──┼───┘    │                  │
-│  │    - Search Logic  ◄──────────┼──┘        │                  │
-│  │    - Pagination    ◄──────────┘           │                  │
-│  └───────────────────────────────────────────┘                  │
-│                                                                   │
-│  ┌───────────────────────────────────────────┐                  │
-│  │          Mock Data Layer                   │                  │
-│  │    (Ready for Real API Integration)        │                  │
-│  │                                            │                  │
-│  │  - 10 Sample Jobs                          │                  │
-│  │  - RapidAPI Structure                      │                  │
-│  │  - Can be replaced with DB/API             │                  │
-│  └───────────────────────────────────────────┘                  │
+│  Routes: GET /api/jobs, GET /api/jobs/:id, GET /api/health      │
+│  Middleware: CORS, JSON Parser, Error Handler                   │
+│  Logic: Job Filtering, Search, Pagination                       │
 └─────────────────────────────────────────────────────────────────┘
+                              │
+                              ├─────→ Azure SQL Database
+                              │       (Users, Searches tables)
+                              │
+                              ├─────→ RapidAPI
+                              │       (Job Listings)
+                              │
+                              └─────→ Application Insights
+                                      (Monitoring)
 ```
+
+---
+
+## Azure Resources Summary
+
+| Resource | Name | Type | Purpose |
+|----------|------|------|---------|
+| Frontend App Service | job-portal-frontend-f9dheecvatencefk | B1 Basic | React SPA hosting |
+| Backend App Service | job-portal-api-d7gectbxabcqaxa0 | B1 Basic | Node.js API server |
+| SQL Server | job-portal-sqlserver-5b | SQL Azure | Database host |
+| SQL Database | jobportaldb | Basic tier | User data & searches |
+| Application Insights | (linked to backend) | Standard | Monitoring & analytics |
+| Resource Group | BCSAI2025-DEVOPS-STUDENT-5B | - | Resource organization |
+
+**Tags Applied**:
+- `project=job-portal`
+- `env=prod`
+- `team=DevOps-Group`
 
 ---
 
@@ -193,6 +172,7 @@ USER ACTION
 ┌─────────────────┐
 │ Mock data       │
 │ filtered        │
+│ (or DB query)   │
 └─────────────────┘
     │
     ▼
