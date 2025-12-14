@@ -15,6 +15,19 @@ This document defines the Scrum roles for each sprint, based on the project plan
 | P6 | **Adriana Fernanda Casco** | Testing / Monitoring |
 
 ---
+## Role Rotation in Practice
+
+Although each team member had a primary expertise area (e.g., frontend, backend, infrastructure, pipelines), the team adopted a **lightweight rotation** of Scrum leadership roles so that everyone would experience both Product Ownership and Scrum Master responsibilities during the project.
+
+This rotation was not the main driver of the workflow, but rather a practical way to share accountability and ensure all team members understood the Scrum process. The technical work remained aligned with each person’s specialization, while the rotating roles handled sprint facilitation, backlog refinement, and communication tasks.
+
+The rotation aligned naturally with the work visible in Azure DevOps:
+
+- Members taking on more architectural or requirement-focused tasks acted as **Product Owner** for that sprint.
+- Members coordinating sprint meetings, resolving blockers, or ensuring deployment alignment acted as **Scrum Master**.
+- All team members contributed as **Developers/DevOps Engineers**, regardless of the leadership role for that sprint.
+
+This approach allowed the team to keep velocity high while still practicing shared leadership in a realistic DevOps environment.
 
 ##  Sprint-by-Sprint Roles
 
@@ -46,5 +59,18 @@ This document defines the Scrum roles for each sprint, based on the project plan
 ---
 
 ##  Notes
-- Roles **rotate each sprint** so every team member practices Product Owner and Scrum Master responsibilities at least once.  
+
+Instead of fixed leadership roles, the team rotated Product Owner and Scrum Master duties to:
+
+- Distribute project management responsibilities fairly  
+- Ensure no single person carried facilitation overhead every sprint  
+- Help each member understand how DevOps decisions affect backlog priorities  
+- Keep the team flexible while respecting each member’s technical specialization  
+
+Leadership rotated, but **technical roles remained stable** to ensure productivity:
+- Backend tasks stayed with the backend developer,
+- Infra tasks stayed with the cloud engineer,
+- Pipelines stayed with the DevOps member, etc.
+
+This hybrid approach helped the team stay efficient while still fulfilling Scrum requirements.
 
