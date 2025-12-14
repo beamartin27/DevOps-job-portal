@@ -632,3 +632,27 @@ npm run build
 
 This architecture documentation provides a comprehensive overview of how all parts of the system work together!
 
+## Deployment & Operations (production reference)
+
+This section contains deployment and operations notes for the production environment.
+
+- Resource group example: `rg-job-portal-prod`
+- App Services (examples): `app-job-portal-frontend`, `app-job-portal-backend`
+- SQL Server & DB (examples): `sql-job-portal-server`, `sqldb-job-portal`
+- Application Insights instance example: `appi-job-portal`
+
+CI/CD and secrets
+- Pipelines are defined in `azure-pipelines.yml`. Use an Azure DevOps Library Variable Group (for example `production-secrets`) to store secrets and connection strings; do not store secrets in repository files.
+
+Monitoring and health checks
+- Backend must expose `GET /api/health` which returns 200 and a short JSON payload for availability checks.
+- Configure Application Insights for both frontend and backend to collect requests, exceptions, and custom events. Create alert rules for failed requests, availability, and high latency.
+
+Security and configuration
+- Set environment variables in App Service Application Settings (or use Key Vault references): `REACT_APP_API_URL`, `DATABASE_URL`, `APPINSIGHTS_INSTRUMENTATIONKEY`, `CORS_ORIGIN`.
+- Enforce HTTPS and restrict SQL access via firewall rules or private endpoints where possible.
+
+Files and references
+- See `AZURE_ARCHITECTURE.md` for concrete resource name examples and `PERFORMANCE_MONITORING.md` for non-functional requirements, SLOs and alert examples.
+
+
