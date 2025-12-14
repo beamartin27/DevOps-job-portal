@@ -44,8 +44,8 @@ app.get('/api/debug', (req, res) => {
   });
 });
 
-// Get jobs with pagination and search
-app.get('/api/jobs', async (req, res) => {
+// Handler for getting jobs with pagination and search
+const getJobsHandler = async (req, res) => {
   try {
     const { search, page = 1, limit = 10, location_filter } = req.query;
     const pageNum = parseInt(page);
@@ -145,10 +145,10 @@ app.get('/api/jobs', async (req, res) => {
       details: error.response?.data || null
     });
   }
-});
+};
 
-// Get single job by ID
-app.get('/api/jobs/:id', async (req, res) => {
+// Handler for getting single job by ID
+const getJobByIdHandler = async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -209,13 +209,21 @@ app.get('/api/jobs/:id', async (req, res) => {
       message: 'Job not found'
     });
   }
-});
+};
+
+// Get jobs with pagination and search - support both /api/jobs and /jobs
+app.get('/api/jobs', getJobsHandler);
+app.get('/jobs', getJobsHandler);
+
+// Get single job by ID - support both /api/jobs/:id and /jobs/:id
+app.get('/api/jobs/:id', getJobByIdHandler);
+app.get('/jobs/:id', getJobByIdHandler);
 
 // Serve React app for all non-API routes (SPA routing)
 // This must be after all API routes
 app.get('*', (req, res) => {
-  // Only serve index.html for non-API routes
-  if (!req.path.startsWith('/api')) {
+  // Only serve index.html for non-API routes (exclude /api and /jobs)
+  if (!req.path.startsWith('/api') && !req.path.startsWith('/jobs')) {
     const indexPath = path.join(__dirname, '../client/build/index.html');
     const altIndexPath = path.join(__dirname, '../build/index.html');
     const publicIndexPath = path.join(__dirname, '../public/index.html');
