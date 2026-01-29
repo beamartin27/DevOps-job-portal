@@ -2,6 +2,20 @@
 
 Full-stack job search application demonstrating DevOps practices with automated CI/CD pipelines, comprehensive testing, and Azure deployment.
 
+## My Contributions (Beatriz Martín Martín)
+I owned the **Azure deployment & monitoring** workstream for the team:
+
+- Defined the cloud high-level architecture (Frontend App Service, Backend App Service, Azure SQL, Application Insights).
+- Created and configured the **App Service plan** + web apps for frontend and backend.
+- Performed the **first manual backend deployment** and validated health endpoints (`/api/health`, `/api/jobs`).
+- Provisioned **Azure SQL Server + database**, executed schema scripts (Users/Searches), and validated connectivity.
+- Enabled **Application Insights**, checked Live Metrics/logs to confirm real traffic from frontend → backend.
+- Helped debug the frontend deployment workflow so the React build was served correctly.
+
+*(This repository is a public portfolio mirror of a team project; CI/CD secrets are intentionally not configured here.)*
+
+> Original team repo: https://github.com/GVasha/DEVOPS_FINAL
+
 ## Project Requirements Met
 
 -  **REST API Backend**: Node.js/Express with 3 endpoints
@@ -180,7 +194,7 @@ Steps:
 {
   "clientId": "xxx",
   "clientSecret": "xxx",
-  "subscriptionId": "e0b9cada-61bc-4b5a-bd7a-52c606726b3b",
+  "subscriptionId": "xxx",
   "tenantId": "xxx"
 }
 ```
@@ -192,7 +206,7 @@ Steps:
 ### Frontend App Service
 
 **Name**: `job-portal-frontend-f9dheecvatencefk`  
-**URL**: https://job-portal-frontend-f9dheecvatencefk.azurewebsites.net  
+**URL**: <frontend-url>
 **Runtime**: Node 18 LTS  
 **Region**: West Europe
 
@@ -204,7 +218,7 @@ REACT_APP_API_URL=https://job-portal-api-d7gectbxabcqaxa0.westeurope-01.azureweb
 ### Backend App Service
 
 **Name**: `job-portal-api-d7gectbxabcqaxa0`  
-**URL**: https://job-portal-api-d7gectbxabcqaxa0.westeurope-01.azurewebsites.net  
+**URL**: <backend-url>
 **Runtime**: Node 18 LTS  
 **Region**: West Europe
 
@@ -222,7 +236,7 @@ DB_CONNECTION_STRING=<azure-sql-connection-string>
 **Database**: `jobportaldb`  
 **Tier**: Basic  
 **Region**: West Europe  
-**Resource Group**: BCSAI2025-DEVOPS-STUDENT-5B
+**Resource Group**: <resource-group>
 
 **Schema**:
 - **Users** table: `Id`, `Username`, `PasswordHash`
